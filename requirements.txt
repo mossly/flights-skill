@@ -1,0 +1,6 @@
+# fast-flights 3.x rewrote the public API and no longer exports
+# FlightData / Passengers / TFSData. The script requires the 2.x line.
+fast-flights<3
+
+# Needed by fast-flights 2.2 but not declared by it.
+typing_extensions
