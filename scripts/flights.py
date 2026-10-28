@@ -69,6 +69,12 @@ DEFAULT_CURRENCY = os.environ.get("FLIGHTS_CURRENCY", "NZD")
 
 DEBUG = False
 
+# Price aria-labels name the currency in words, sometimes several:
+# "868 New Zealand dollars", "351 US dollars", "1,204 British pounds".
+PRICE_LABEL = re.compile(
+    r'(\d[\d,]*)\s+((?:[A-Za-z]+ )*(?:dollars|pounds|euros|yen|francs|kronor|krone|rupees))'
+)
+
 
 def _safe_text(node, strip=True):
     if node is None:
@@ -173,15 +179,15 @@ def parse_response_patched(html: str) -> Result:
                 # span aria-label: "868 New Zealand dollars"
                 for span in item.css("span[aria-label]"):
                     lbl = span.attributes.get("aria-label", "")
-                    m = re.search(r'(\d[\d,]*)\s+\w+ dollars', lbl)
+                    m = PRICE_LABEL.search(lbl)
                     if m:
                         price = span.text().replace(",", "")
                         break
             if not price or price == "0":
                 # main aria-label: "From 351 New Zealand dollars. ..."
-                m = re.search(r'From (\d[\d,]*) \w+ dollars', aria)
+                m = re.search(r'From ' + PRICE_LABEL.pattern, aria)
                 if m:
-                    price = f"NZ${m.group(1)}"
+                    price = f"{m.group(1)} {m.group(2)}"
 
             if not price:
                 continue  # skip unparseable rows
